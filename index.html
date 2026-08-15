@@ -263,10 +263,125 @@
   .again-btn:hover{ background:var(--blossom-deep); color:var(--cream-card); }
   .again-btn:focus-visible, .envelope:focus-visible .seal{ outline:2px solid var(--matcha-deep); outline-offset:3px; }
 
-  @media (max-width: 480px){
-    .card{ padding:34px 22px 30px; }
-    .greeting{ font-size:22px; }
-    .letter-body p{ font-size:19px; }
+  /* ---------- MOBILE SUPPORT ---------- */
+  @media (max-width: 600px){
+    html, body{
+      width:100%;
+      min-width:0;
+    }
+
+    body{
+      min-height:100dvh;
+      padding:16px;
+      align-items:flex-start;
+      overflow-x:hidden;
+      overflow-y:auto;
+    }
+
+    #cover{
+      width:100%;
+      min-height:calc(100dvh - 32px);
+      justify-content:center;
+      gap:18px;
+    }
+
+    .envelope{
+      width:min(320px, 86vw);
+      height:min(210px, 58vw);
+      min-height:165px;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .seal{
+      width:58px;
+      height:58px;
+    }
+
+    #letter{
+      width:100%;
+      max-width:560px;
+      padding-bottom:24px;
+    }
+
+    .string-bar{
+      width:100%;
+      height:62px;
+    }
+
+    .string-line{
+      top:28px;
+      left:5%;
+      right:5%;
+    }
+
+    .charm{
+      top:0;
+      transform:scale(.85);
+      transform-origin:top center;
+    }
+
+    .charm.c1{ left:17%; }
+    .charm.c2{
+      left:50%;
+      transform:translateX(-50%) scale(.85);
+    }
+    .charm.c3{ left:83%; }
+
+    .card{
+      width:100%;
+      padding:32px 20px 28px;
+      border-radius:4px 4px 12px 12px;
+    }
+
+    .kicker{
+      font-size:18px;
+      margin-bottom:16px;
+    }
+
+    .greeting{
+      font-size:23px;
+      line-height:1.25;
+      margin-bottom:20px;
+    }
+
+    .letter-body p{
+      font-size:19px;
+      line-height:1.55;
+      margin-bottom:18px;
+    }
+
+    .signature{
+      font-size:28px;
+    }
+
+    .again-btn{
+      min-height:44px;
+      padding:10px 22px;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
+    }
+  }
+
+  @media (max-width: 380px){
+    body{ padding:10px; }
+
+    #cover{
+      min-height:calc(100dvh - 20px);
+    }
+
+    .envelope{
+      width:88vw;
+      height:52vw;
+      min-height:150px;
+    }
+
+    .card{
+      padding:28px 16px 24px;
+    }
+
+    .greeting{ font-size:21px; }
+    .letter-body p{ font-size:18px; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -393,20 +508,32 @@
     });
   }
 
-  function openEnvelope(){
+  let envelopeOpened = false;
+
+  function openEnvelope(e){
+    if(e) e.preventDefault();
+    if(envelopeOpened) return;
+    envelopeOpened = true;
+
     envelope.classList.add('open');
+
     setTimeout(()=>{
       cover.classList.add('hidden-cover');
       revealLetter();
     }, reduced ? 100 : 650);
   }
 
+  // Click works on desktop; pointerup gives reliable touch support on mobile.
   envelope.addEventListener('click', openEnvelope);
+  envelope.addEventListener('pointerup', (e)=>{
+    if(e.pointerType === 'touch') openEnvelope(e);
+  });
   envelope.addEventListener('keydown', (e)=>{
     if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openEnvelope(); }
   });
 
   againBtn.addEventListener('click', ()=>{
+    envelopeOpened = false;
     letter.classList.remove('show');
     letterBody.querySelectorAll('p').forEach(p=>p.classList.remove('reveal'));
     signature.classList.remove('reveal');
@@ -415,6 +542,11 @@
     envelope.classList.remove('open');
     cover.classList.remove('hidden-cover');
   });
+  // Safety fallback for mobile browsers that interrupt animations/timers.
+  window.addEventListener('pageshow', ()=>{
+    if(letter.classList.contains('show')) return;
+  });
+
 </script>
 </body>
 </html>
